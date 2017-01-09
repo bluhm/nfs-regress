@@ -28,7 +28,7 @@ main(void)
 		err(1, "mmap");
 
 	len = sizeof(struct tcpstat);
-	if (sysctl(mib, 4, p, &len, NULL, 0) == -1)
+	if (sysctl(mib, sizeof(mib) / sizeof(mib[0]), p, &len, NULL, 0) == -1)
 		err(1, "sysctl tcpstat");
 
 	return (0);
