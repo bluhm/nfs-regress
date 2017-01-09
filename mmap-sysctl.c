@@ -38,11 +38,9 @@ main(void)
 	    MAP_SHARED, fd, 0);
 	if (p == MAP_FAILED)
 		err(1, "mmap");
-
 	len = sizeof(struct tcpstat);
 	if (sysctl(mib, sizeof(mib) / sizeof(mib[0]), p, &len, NULL, 0) == -1)
 		err(1, "sysctl tcpstat");
-
 	if (close(fd) == -1)
 		err(1, "close read");
 
