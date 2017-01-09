@@ -1,3 +1,5 @@
+#include <machine/param.h>
+
 #include <sys/mman.h>
 #include <sys/queue.h>
 #include <sys/socket.h>
@@ -12,21 +14,26 @@
 #include <err.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 int
 main(void)
 {
-	char *p, file[] = "/tmp/nfsfile";
+	char *p, file[] = "/tmp/nfsfile", page[PAGE_SIZE];
 	size_t len;
 	int fd, mib[] = { CTL_NET, PF_INET, IPPROTO_TCP, TCPCTL_STATS };
 
-	if ((fd = open(file, O_RDWR|O_CREAT, 0777)) == -1)
-		err(1, "open '%s'", file);
+	if ((fd = open(file, O_WRONLY|O_CREAT|O_TRUNC, 0777)) == -1)
+		err(1, "open write '%s'", file);
+	memset(page, 0, sizeof(page));
+	if (write(fd, page, sizeof(page)) == -1)
+		err(1, "write");
+	if (close(fd) == -1)
+		err(1, "close write");
 
-	if (lseek(fd, 4096, SEEK_SET) == (off_t)-1)
-		err(1, "lseek 4096");
-
+	if ((fd = open(file, O_RDWR)) == -1)
+		err(1, "open read '%s'", file);
 	p = mmap(NULL, sizeof(struct tcpstat), PROT_READ|PROT_WRITE,
 	    MAP_SHARED, fd, 0);
 	if (p == MAP_FAILED)
@@ -35,6 +42,9 @@ main(void)
 	len = sizeof(struct tcpstat);
 	if (sysctl(mib, sizeof(mib) / sizeof(mib[0]), p, &len, NULL, 0) == -1)
 		err(1, "sysctl tcpstat");
+
+	if (close(fd) == -1)
+		err(1, "close read");
 
 	return (0);
 }
