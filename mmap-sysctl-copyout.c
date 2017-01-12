@@ -33,12 +33,26 @@ main(void)
 	ssize_t n;
 
 	/*
+	 * Initialize file on NFS server.
+	 */
+	snprintf(path, sizeof(path), "%s/%s", SERVER, FILE);
+	if ((fd = open(path, O_RDWR|O_CREAT|O_TRUNC, 0777)) == -1)
+		err(1, "open write '%s'", path);
+	len = sizeof(struct tcpstat);
+	memset(&stats, 0, len);
+	if ((n = write(fd, &stats, len)) == -1)
+		err(1, "write");
+	if ((size_t)n != len)
+		errx(1, "write not %zu: %zd", len, n);
+	if (close(fd) == -1)
+		err(1, "close read");
+
+	/*
 	 * Map file on NFS client and write sysctl net.inet.tcp.stats into it.
 	 */
 	snprintf(path, sizeof(path), "%s/%s", CLIENT, FILE);
-	if ((fd = open(path, O_RDWR|O_CREAT|O_TRUNC, 0777)) == -1)
+	if ((fd = open(path, O_RDWR)) == -1)
 		err(1, "open mmap '%s'", path);
-	len = sizeof(struct tcpstat);
 	p = mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 	if (p == MAP_FAILED)
 		err(1, "mmap");
