@@ -1,6 +1,7 @@
 #	$OpenBSD$
 
-PROG=		mmap-sysctl-copyin
+PROGS=		mmap-sysctl-copyin mmap-sysctl-copyout
+OBJS=		${PROGS:S/$/.o/}
 CLEANFILES=	diskimage
 
 .PHONY: disk nfs mount unconfig clean
@@ -25,16 +26,27 @@ mount: disk nfs
 
 unconfig:
 	-umount -f -t nfs -h 127.0.0.1 -a
-	-rmdir /mnt/nfs-client
+	-rmdir /mnt/nfs-client 2>/dev/null || true
 	-pkill mountd || true
 	-rcctl -f stop nfsd
 	-rcctl -f stop portmap
 	-umount -f /dev/vnd0c 2>/dev/null || true
-	-rmdir /mnt/nfs-server
+	-rmdir /mnt/nfs-server 2>/dev/null || true
 	-vnconfig -u vnd0 2>/dev/null || true
+	-rm -f stamp-setup
 
 clean: _SUBDIRUSE unconfig
-	rm -f a.out [Ee]rrs mklog *.core y.tab.h \
-	    ${PROG} ${OBJS} ${_LEXINTM} ${_YACCINTM} ${CLEANFILES}
+	rm -f a.out [Ee]rrs mklog *.core y.tab.h stamp-* \
+	    ${PROGS} ${OBJS} ${_LEXINTM} ${_YACCINTM} ${CLEANFILES}
+
+stamp-setup:
+	${.MAKE} -C ${.CURDIR} mount
+	date >$@
+
+.for p in ${PROGS}
+REGRESS_TARGETS+=	run-regress-${p}
+run-regress-${p}: stamp-setup ${p}
+	./${p}
+.endfor
 
 .include <bsd.regress.mk>
