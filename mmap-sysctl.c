@@ -35,8 +35,7 @@ main(void)
 
 	if ((fd = open(file, O_RDWR)) == -1)
 		err(1, "open mmap '%s'", file);
-	p = mmap(NULL, sizeof(struct tcpstat), PROT_READ|PROT_WRITE,
-	    MAP_SHARED, fd, 0);
+	p = mmap(NULL, sizeof(int), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 	if (p == MAP_FAILED)
 		err(1, "mmap");
 	if (sysctl(mib, miblen, NULL, 0, p, sizeof(int)) == -1)
