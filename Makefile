@@ -1,6 +1,6 @@
 #	$OpenBSD$
 
-PROG=		mmap-sysctl
+PROG=		mmap-sysctl-copyin
 CLEANFILES=	diskimage
 
 .PHONY: disk nfs mount unconfig clean
