@@ -23,6 +23,7 @@ main(void)
 	char *p, file[] = "/tmp/nfsfile", page[PAGE_SIZE];
 	int fd;
 	int mib[] = { CTL_NET, PF_INET, IPPROTO_TCP, TCPCTL_ALWAYS_KEEPALIVE };
+	u_int miblen = sizeof(mib) / sizeof(mib[0]);
 
 	if ((fd = open(file, O_WRONLY|O_CREAT|O_TRUNC, 0777)) == -1)
 		err(1, "open write '%s'", file);
@@ -38,8 +39,7 @@ main(void)
 	    MAP_SHARED, fd, 0);
 	if (p == MAP_FAILED)
 		err(1, "mmap");
-	if (sysctl(mib, sizeof(mib) / sizeof(mib[0]), NULL, 0,
-	    p, sizeof(int)) == -1)
+	if (sysctl(mib, miblen, NULL, 0, p, sizeof(int)) == -1)
 		err(1, "sysctl keepalive");
 	if (close(fd) == -1)
 		err(1, "close mmap");
