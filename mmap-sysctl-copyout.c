@@ -17,7 +17,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define FILE	"sysctl-net.inet.tcp.always_keepalive"
+#define FILE	"sysctl-net.inet.tcp.stats"
 #define CLIENT	"/mnt/nfs-client"
 #define SERVER	"/mnt/nfs-server"
 
@@ -25,40 +25,42 @@ int
 main(void)
 {
 	char *p, path[PATH_MAX];
-	int mib[] = { CTL_NET, PF_INET, IPPROTO_TCP, TCPCTL_ALWAYS_KEEPALIVE };
+	int mib[] = { CTL_NET, PF_INET, IPPROTO_TCP, TCPCTL_STATS };
 	u_int miblen = sizeof(mib) / sizeof(mib[0]);
-	int fd, val;
+	struct tcpstat stats;
+	int fd;
 	size_t len;
+	ssize_t n;
 
 	/*
-	 * Get current value of sysctl net.inet.tcp.always_keepalive
-	 * and write it into a file on the NFS server.
+	 * Map file on NFS client and write sysctl net.inet.tcp.stats into it.
 	 */
-	snprintf(path, sizeof(path), "%s/%s", SERVER, FILE);
-	if ((fd = open(path, O_WRONLY|O_CREAT|O_TRUNC, 0777)) == -1)
-		err(1, "open write '%s'", path);
-	len = sizeof(int);
-	if (sysctl(mib, miblen, &val, &len, NULL, 0) == -1)
-		err(1, "sysctl read keepalive");
-	if (write(fd, &val, len) == -1)
-		err(1, "write");
-	if (close(fd) == -1)
-		err(1, "close write");
-
-	/*
-	 * Map file on NFS client with value and write it to
-	 * sysctl net.inet.tcp.always_keepalive.
-	 */
-	snprintf(path, sizeof(path), "%s/%s", SERVER, FILE);
-	if ((fd = open(path, O_RDWR)) == -1)
+	snprintf(path, sizeof(path), "%s/%s", CLIENT, FILE);
+	if ((fd = open(path, O_RDWR|O_CREAT|O_TRUNC, 0777)) == -1)
 		err(1, "open mmap '%s'", path);
-	p = mmap(NULL, sizeof(int), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+	len = sizeof(struct tcpstat);
+	p = mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 	if (p == MAP_FAILED)
 		err(1, "mmap");
-	if (sysctl(mib, miblen, NULL, 0, p, sizeof(int)) == -1)
-		err(1, "sysctl write keepalive");
+	if (sysctl(mib, miblen, p, &len, NULL, 0) == -1)
+		err(1, "sysctl get stat");
+	if (len != sizeof(struct tcpstat))
+		errx(1, "len not %zu: %zu", sizeof(struct tcpstat), len);
 	if (close(fd) == -1)
 		err(1, "close mmap");
+
+	/*
+	 * Read file from NFS server.
+	 */
+	snprintf(path, sizeof(path), "%s/%s", SERVER, FILE);
+	if ((fd = open(path, O_RDONLY)) == -1)
+		err(1, "open read '%s'", path);
+	if ((n = read(fd, &stats, len)) == -1)
+		err(1, "read");
+	if ((size_t)n != len)
+		errx(1, "read not %zu: %zd", len, n);
+	if (close(fd) == -1)
+		err(1, "close read");
 
 	return (0);
 }
