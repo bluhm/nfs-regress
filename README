@@ -2,3 +2,5 @@ Use a NFS filesystem mounted via loopback.  By changing files
 directly on the server and accessing on the client specific kernel
 behavior can be triggered.  Especially using file mmap(2) over
 NFS should be tested.
+
+These tests must be run as root, on a system with free vnd0 slot.
