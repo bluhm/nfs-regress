@@ -40,12 +40,26 @@ clean: _SUBDIRUSE unconfig
 	    ${PROGS} ${OBJS} ${_LEXINTM} ${_YACCINTM} ${CLEANFILES}
 
 stamp-setup:
+	@echo '\n======== $@ ========'
 	${.MAKE} -C ${.CURDIR} mount
 	date >$@
+
+REGRESS_TARGETS+=	run-regress-read
+run-regress-read: stamp-setup
+	@echo '\n======== $@ ========'
+	echo -n $@ >/mnt/nfs-server/read
+	[ $@ = "`cat /mnt/nfs-client/read`" ]
+
+REGRESS_TARGETS+=	run-regress-write
+run-regress-write: stamp-setup
+	@echo '\n======== $@ ========'
+	echo -n $@ >/mnt/nfs-client/write
+	[ $@ = "`cat /mnt/nfs-server/write`" ]
 
 .for p in ${PROGS}
 REGRESS_TARGETS+=	run-regress-${p}
 run-regress-${p}: stamp-setup ${p}
+	@echo '\n======== $@ ========'
 	./${p}
 .endfor
 
