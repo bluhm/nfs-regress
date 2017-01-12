@@ -63,4 +63,9 @@ run-regress-${p}: stamp-setup ${p}
 	./${p}
 .endfor
 
+REGRESS_TARGETS+=	run-regress-cleanup
+run-regress-cleanup:
+	@echo '\n======== $@ ========'
+	${.MAKE} -C ${.CURDIR} unconfig
+
 .include <bsd.regress.mk>
