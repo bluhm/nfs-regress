@@ -49,7 +49,7 @@ main(void)
 	 * Map file on NFS client with value and write it to
 	 * sysctl net.inet.tcp.always_keepalive.
 	 */
-	snprintf(path, sizeof(path), "%s/%s", SERVER, FILE);
+	snprintf(path, sizeof(path), "%s/%s", CLIENT, FILE);
 	if ((fd = open(path, O_RDWR)) == -1)
 		err(1, "open mmap '%s'", path);
 	p = mmap(NULL, sizeof(int), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
