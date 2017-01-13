@@ -1,3 +1,5 @@
+/*	$OpenBSD$	*/
+
 #include <sys/param.h>
 #include <sys/mman.h>
 #include <sys/queue.h>
