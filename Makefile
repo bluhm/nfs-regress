@@ -1,4 +1,4 @@
-#	$OpenBSD$
+# $OpenBSD$
 
 PROGS=		mmap-sysctl-copyin mmap-sysctl-copyout
 OBJS=		${PROGS:S/$/.o/}
