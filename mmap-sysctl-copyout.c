@@ -1,4 +1,4 @@
-/*	$OpenBSD$	*/
+/*	$OpenBSD: mmap-sysctl-copyout.c,v 1.2 2017/01/13 01:33:14 bluhm Exp $	*/
 
 #include <sys/param.h>
 #include <sys/mman.h>
