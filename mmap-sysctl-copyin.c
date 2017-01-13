@@ -18,8 +18,8 @@
 #include <unistd.h>
 
 #define FILE	"sysctl-net.inet.tcp.always_keepalive"
-#define CLIENT	"/mnt/nfs-client"
-#define SERVER	"/mnt/nfs-server"
+#define CLIENT	"/mnt/regress-nfs-client"
+#define SERVER	"/mnt/regress-nfs-server"
 
 int
 main(void)
