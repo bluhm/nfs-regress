@@ -27,7 +27,7 @@ mount: disk nfs
 unconfig:
 	-umount -f -t nfs -h 127.0.0.1 -a
 	-rmdir /mnt/regress-nfs-client 2>/dev/null || true
-	-pkill mountd || true
+	-pkill -KILL mountd || true
 	-rcctl -f stop nfsd
 	-rcctl -f stop portmap
 	-umount -f /dev/vnd0c 2>/dev/null || true
