@@ -65,9 +65,18 @@ run-regress-socket-stream: stamp-setup
 	rm -f /mnt/regress-nfs-client/socket-stream data
 	-pkill nc
 	nc -U -l /mnt/regress-nfs-client/socket-stream >data &\
-	    sleep 1; \
+	    sleep 1;\
 	    ( echo $$$$ | nc -N -U /mnt/regress-nfs-client/socket-stream ) &&\
-	    wait && grep $$ data
+	    wait && grep $$$$ data
+
+REGRESS_TARGETS+=	run-regress-socket-datagram
+run-regress-socket-datagram: stamp-setup
+	@echo '\n======== $@ ========'
+	rm -f /mnt/regress-nfs-client/socket-datagram data
+	nc -U -l -u /mnt/regress-nfs-client/socket-datagram >data &
+	until [ -S /mnt/regress-nfs-client/socket-datagram ]; do :; done
+	echo $@ | nc -N -U -u /mnt/regress-nfs-client/socket-datagram
+	grep $@ data
 
 REGRESS_TARGETS+=	run-regress-cleanup
 run-regress-cleanup:
