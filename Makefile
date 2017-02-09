@@ -59,16 +59,17 @@ run-regress-${p}: stamp-setup ${p}
 	./${p}
 .endfor
 
-.for socktype nctype in stream -U datagram -Uu
+.for socktype nctype in stream -U dgram -Uu
 REGRESS_TARGETS+=	run-regress-socket-${socktype}
 run-regress-socket-${socktype}: stamp-setup
 	@echo '\n======== $@ ========'
-	rm -f /mnt/regress-nfs-client/socket-${socktype} data
-	nc ${nctype} -l /mnt/regress-nfs-client/socket-${socktype} >data &
-	until [ -S /mnt/regress-nfs-client/socket-${socktype} ]; do :; done
-	echo $@ | nc -N ${nctype} /mnt/regress-nfs-client/socket-${socktype}
-	grep $@ data
-	pkill -f nc ${nctype} -l /mnt/regress-nfs-client/socket-${socktype}
+	rm -f /mnt/regress-nfs-client/socket-${socktype}
+	nc ${nctype} -v -l /mnt/regress-nfs-client/socket-${socktype} &
+	[ -S /mnt/regress-nfs-client/socket-${socktype} ] || sleep 1
+	[ -S /mnt/regress-nfs-client/socket-${socktype} ]
+	nc ${nctype} -z /mnt/regress-nfs-client/socket-${socktype}
+	pkill nc ${nctype} -v -l /mnt/regress-nfs-client/socket-${socktype} ||\
+	    true
 .endfor
 
 REGRESS_TARGETS+=	run-regress-cleanup
