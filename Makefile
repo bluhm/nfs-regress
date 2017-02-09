@@ -59,6 +59,13 @@ run-regress-${p}: stamp-setup ${p}
 	./${p}
 .endfor
 
+REGRESS_TARGETS+=	run-regress-socket
+run-regress-socket-stream: stamp-setup
+	@echo '\n======== $@ ========'
+	nc -U -l /mnt/regress-nfs-client/socket-stream >&3 &\
+	    echo $$ | nc -N -U /mnt/regress-nfs-client/socket-stream; 
+	    grep $$ <&3
+
 REGRESS_TARGETS+=	run-regress-cleanup
 run-regress-cleanup:
 	@echo '\n======== $@ ========'
