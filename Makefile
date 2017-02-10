@@ -68,13 +68,16 @@ run-regress-socket-${socktype}: stamp-setup
 	[ -S /mnt/regress-nfs-client/socket-${socktype} ] || sleep 1
 	[ -S /mnt/regress-nfs-client/socket-${socktype} ]
 	nc ${nctype} -z /mnt/regress-nfs-client/socket-${socktype}
-	pkill nc ${nctype} -v -l /mnt/regress-nfs-client/socket-${socktype} ||\
-	    true
+.if "${socktype}" == dgram
+	pkill -xf "nc -Uu -v -l /mnt/regress-nfs-client/socket-dgram"
+.endif
 .endfor
 
 REGRESS_TARGETS+=	run-regress-cleanup
 run-regress-cleanup:
 	@echo '\n======== $@ ========'
+	-pkill -xf "nc -U -v -l /mnt/regress-nfs-client/socket-stream" || true
+	-pkill -xf "nc -Uu -v -l /mnt/regress-nfs-client/socket-dgram" || true
 	${.MAKE} -C ${.CURDIR} unconfig
 
 .include <bsd.regress.mk>
