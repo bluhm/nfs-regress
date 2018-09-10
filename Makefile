@@ -1,8 +1,7 @@
-# $OpenBSD: Makefile,v 1.5 2017/02/10 12:30:50 bluhm Exp $
+# $OpenBSD: Makefile,v 1.7 2017/09/04 12:04:03 bluhm Exp $
 
 PROGS=		mmap-sysctl-copyin mmap-sysctl-copyout
-OBJS=		${PROGS:S/$/.o/}
-CLEANFILES=	${PROGS} diskimage stamp-*
+CLEANFILES=	diskimage stamp-*
 
 .PHONY: disk nfs mount unconfig clean
 
@@ -21,6 +20,12 @@ nfs:
 mount: disk nfs
 	mkdir -p /mnt/regress-nfs-server
 	mount /dev/vnd0c /mnt/regress-nfs-server
+	# wait until mountd(8) has exported the directory
+	for i in `jot 100`; do \
+	    mount | grep 'regress-nfs-server .*NFS exported' && break; \
+	    [ $$i = 100 ] && exit 1; \
+	    sleep .1; \
+	done
 	mkdir -p /mnt/regress-nfs-client
 	mount -t nfs 127.0.0.1:/mnt/regress-nfs-server /mnt/regress-nfs-client
 
